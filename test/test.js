@@ -80,7 +80,7 @@ describe('archive helpers', function() {
   describe('#readListOfUrls', function () {
     it('should read urls from sites.txt', function (done) {
       var urlArray = ['example1.com', 'example2.com'];
-      fs.writeFileSync(archive.paths.list, urlArray.join('\n'));
+      fs.writeFileSync(archive.paths.list, urlArray.join(','));
 
       archive.readListOfUrls(function(urls) {
         expect(urls).to.deep.equal(urlArray);
@@ -92,11 +92,10 @@ describe('archive helpers', function() {
   describe('#isUrlInList', function () {
     it('should check if a url is in the list', function (done) {
       var urlArray = ['example1.com', 'example2.com'];
-      fs.writeFileSync(archive.paths.list, urlArray.join('\n'));
+      fs.writeFileSync(archive.paths.list, urlArray.join(','));
 
       var counter = 0;
       var total = 2;
-
       archive.isUrlInList('example1.com', function (exists) {
         expect(exists).to.be.true;
         if (++counter === total) { done(); }
@@ -111,8 +110,8 @@ describe('archive helpers', function() {
 
   describe('#addUrlToList', function () {
     it('should add a url to the list', function (done) {
-      var urlArray = ['example1.com', 'example2.com\n'];
-      fs.writeFileSync(archive.paths.list, urlArray.join('\n'));
+      var urlArray = ['example1.com', 'example2.com,'];
+      fs.writeFileSync(archive.paths.list, urlArray.join(','));
 
       archive.addUrlToList('someurl.com', function () {
         archive.isUrlInList('someurl.com', function (exists) {

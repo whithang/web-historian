@@ -28,37 +28,79 @@ exports.initialize = function(pathsObj) {
 exports.readListOfUrls = function(callback) {
   //get list from the achives/sites.txt file
   //callback(list of urls)
+  fs.readFile(exports.paths.list, function(err, html) {
+    if (err) {
+      throw err;
+    }
+    html = html.toString().split(',');
+    callback(html);
+  }); 
 };
 
 exports.isUrlInList = function(url, callback) {
-  // if urlIsInWorkerList of achives/sites.txt file
-    // callback(true)
-  // else
-    // callback(false)
+  //readListOfUrls(callback);
+  fs.readFile(exports.paths.list, function(err, data) {
+    if (err) {
+      throw err;
+    }
+    var webList = data.toString().split(','); //is data already a string?
+    var isInList = webList.includes(url);
+    callback && callback(isInList); //test parameters vs addUrlToList parameters
+    return isInList;
+  });
 };
 
 exports.addUrlToList = function(url, callback) {
   // write this url to urls in progress files at archives/sites.txt
+  fs.appendFile(exports.paths.list, url + ',', (err) => {
+    if (err) {
+      callback && callback(false);
+      throw err;
+    }
+  });
   // expect callback to be an isUrlInList call to check this site was added
+  callback && callback(true);
 };
 
-exports.isUrlArchived = function(url, callback) {
-  fs.readdir(paths.archivedSites, (err, files) => {
+exports.isUrlArchived = function(url, callback, res) {
+  fs.readdir(exports.paths.archivedSites, (err, files) => {
     if (err) {
       throw err;
     }
-
-    files.forEach(file => {
-      file = file.slice(0, file.length - 6); //to remove the .html from file names
-      if (file === url) {
-        callback(true, url);
-      }
-    });
+    if (files.includes(url + '.html')) {
+      //redirect to html page
+      fs.readFile(exports.paths.list, function(err, html) {
+        if (err) {
+          throw err;
+        }
+        callback(true, html, res);
+      });
+    } else {
+      //redirect to loading page
+      fs.readFile(exports.paths.siteAssets + '/loading.html', function(err, html) {
+        if (err) {
+          throw err;
+        }
+        callback(true, html, res);
+      });
+      //start other side processes
+      exports.startSideProcesses(url);
+    }
   });
-  callback(false, url);
 };
 
 exports.downloadUrls = function(urls) {
   // tells worker to download pages for these urls
   // [worker should delete urls when done (??)]
 };
+
+exports.startSideProcesses = function(url) {
+  if (!exports.isUrlInList(url)) {
+    exports.addUrlToList(url);
+  }
+};
+
+
+
+
+
