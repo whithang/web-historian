@@ -45,6 +45,8 @@ exports.isUrlInList = function(url, callback) {
     }
     var webList = data.toString().split(','); //is data already a string?
     var isInList = webList.includes(url);
+    // console.log('webList: ' + webList);
+    // console.log('url: ' + url + ' , isInList: ' + isInList);
     callback && callback(isInList); //test parameters vs addUrlToList parameters
     return isInList;
   });
@@ -62,7 +64,8 @@ exports.addUrlToList = function(url, callback) {
   callback && callback(true);
 };
 
-exports.isUrlArchived = function(url, callback, res) {
+exports.isUrlArchived = function(url, callback) {
+  // var reqObj = {};
   fs.readdir(exports.paths.archivedSites, (err, files) => {
     if (err) {
       throw err;
@@ -73,7 +76,12 @@ exports.isUrlArchived = function(url, callback, res) {
         if (err) {
           throw err;
         }
-        callback(true, html, res);
+        // console.log('isURLArchived html: ' + html);
+        // reqObj['html'] = html;
+        // reqObj['statusCode'] = 200;
+        callback && callback(true, {html: html, statusCode: 200});
+
+        // return {html: html, statusCode: 200};
       });
     } else {
       //redirect to loading page
@@ -81,12 +89,19 @@ exports.isUrlArchived = function(url, callback, res) {
         if (err) {
           throw err;
         }
-        callback(false, html, res);
+        
+        callback && callback(false, {html: html, statusCode: 302});
+        exports.startSideProcesses(url);
+        // console.log('isURLArchived html: ' + html);
+        // var reqObj = {};
+        // reqObj['html'] = html;
+        // reqObj['statusCode'] = 302;
+        // return {html: html, statusCode: 302};
       });
       //start other side processes
-      exports.startSideProcesses(url);
     }
   });
+  // return reqObj;
 };
 
 exports.downloadUrls = function(urls) {
