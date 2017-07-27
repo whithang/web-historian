@@ -26,16 +26,39 @@ exports.initialize = function(pathsObj) {
 // modularize your code. Keep it clean!
 
 exports.readListOfUrls = function(callback) {
+  //get list from the achives/sites.txt file
+  //callback(list of urls)
 };
 
 exports.isUrlInList = function(url, callback) {
+  // if urlIsInWorkerList of achives/sites.txt file
+    // callback(true)
+  // else
+    // callback(false)
 };
 
 exports.addUrlToList = function(url, callback) {
+  // write this url to urls in progress files at archives/sites.txt
+  // expect callback to be an isUrlInList call to check this site was added
 };
 
 exports.isUrlArchived = function(url, callback) {
+  fs.readdir(paths.archivedSites, (err, files) => {
+    if (err) {
+      throw err;
+    }
+
+    files.forEach(file => {
+      file = file.slice(0, file.length - 6); //to remove the .html from file names
+      if (file === url) {
+        callback(true, url);
+      }
+    });
+  });
+  callback(false, url);
 };
 
 exports.downloadUrls = function(urls) {
+  // tells worker to download pages for these urls
+  // [worker should delete urls when done (??)]
 };
