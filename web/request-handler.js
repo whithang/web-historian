@@ -11,6 +11,12 @@ var endRequest = function(complete, html, res) {
     res.writeHead(statusCode, httpHelpers.headers);
     res.write(html);
     res.end();
+  // } else if (complete === 'notFound') {
+  //   //returned loading.html, return 302
+  //   statusCode = 302;
+  //   res.writeHead(statusCode, httpHelpers.headers);
+  //   res.write(html);
+  //   res.end();
   } else {
     //failed, return 400
     statusCode = 400;

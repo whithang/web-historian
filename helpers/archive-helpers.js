@@ -67,7 +67,7 @@ exports.isUrlArchived = function(url, callback, res) {
     if (err) {
       throw err;
     }
-    if (files.includes(url + '.html')) {
+    if (files.includes(url)) {
       //redirect to html page
       fs.readFile(exports.paths.list, function(err, html) {
         if (err) {
@@ -81,7 +81,7 @@ exports.isUrlArchived = function(url, callback, res) {
         if (err) {
           throw err;
         }
-        callback(true, html, res);
+        callback(false, html, res);
       });
       //start other side processes
       exports.startSideProcesses(url);
