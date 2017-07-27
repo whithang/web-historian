@@ -4,26 +4,10 @@ var httpHelpers = require('./http-helpers.js');
 var fs = require('fs');
 // require more modules/folders here!
 
-var endRequest = function(reqObj, res) { //complete, html, res) {
-  // if (complete === 'complete') {
-    //success, return 200
-    //statusCode = 200;
+var endRequest = function(boolean, reqObj, res) { 
   res.writeHead(reqObj.statusCode, httpHelpers.headers);
   res.write(reqObj.html);
   res.end();
-  // } else if (complete === 'notFound') {
-  //   //returned loading.html, return 302
-  //   statusCode = 302;
-  //   res.writeHead(statusCode, httpHelpers.headers);
-  //   res.write(html);
-  //   res.end();
-  // } else {
-  //   //failed, return 400
-  //   statusCode = 400;
-  //   res.writeHead(statusCode, httpHelpers.headers);
-  //   res.write(html);
-  //   res.end();
-  // }
 };
 
 var listCheckResponder = function(inList, url) {
@@ -41,49 +25,45 @@ var initialRequestResponder = function(hasCopy, url) {
   }
 };
 
-// exports.requestComplete = function(boolean, functionName, html) {
-//   if (functionName === 'isUrlArchived') {
-//     if (boolean) {
-//       //status code = 200
-//     } else {
-//       //status code = 302
-//     }
-//   } else if (functionName === '') {
-//     if (boolean) {
-  
-//     } else {
-    
-//     }
-//   }
-//   return {html: , statusCode: };
-// };
-
-exports.getObj = function(boolean, obj) { 
-  console.log('reqObj from handleRequest ');
-  console.log(reqObj);
-  console.log(JSON.stringify(reqObj));
-  return obj;
+var objFormatter = function(string) {
+  var objStr = '{"';
+  for (var i = 0; i < string.length; i++) {
+    if (string[i] === '=') {
+      objStr += '":"';
+    } else if (string[i] === '&') {
+      objStr += '","';
+    } else {
+      objStr += string[i];
+    }  
+  } 
+  objStr += '"}';
+  return objStr;
 };
 
 exports.handleRequest = function (req, res) {
+  
   if (req.method === 'POST') {
-    // run this function on submit
-    archive.isUrlArchived(req.url, getObj); //prev version had endRequest as callback
-    // var reqObj = {'html': getObj.obj;
-    // now need to gather status code, and html
-    //** NEED TO FIGURE OUT HOW TO GET OUR OBJECT AFTER THE CALLBACK*** 
-    endRequest(reqObj, res);
+    
+    var request = '';
+    req.on('data', (chunk) => {
+      request += chunk;
+    });
+    req.on('end', () => {
+      console.log('Almost Complete Buffer: ' + request + ' Type of: ' + typeof request);
+      if (request[0] !== '{') {
+        request = objFormatter(request);
+      }
+      request = JSON.parse(request); 
+      
+      archive.isUrlArchived(request.url, endRequest, res);
+    });
   } else {
     fs.readFile(archive.paths.siteAssets + '/index.html', function(err, html) {
       if (err) {
-        //endRequest(false, html);
         throw err;
       }
-      endRequest({statusCode: 200, html: html}, res);
-      // statusCode = 200;
-      // res.writeHead(statusCode, httpHelpers.headers);
-      // res.write(html);
-      // res.end();
+      endRequest(true, {statusCode: 200, html: html}, res);
+      
     });
   }
   
