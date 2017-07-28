@@ -1,10 +1,13 @@
 var http = require('http');
 var handler = require('./request-handler');
 var initialize = require('./initialize.js');
+var CronJob = require('cron').CronJob;
+var htmlFetcher = require('../workers/htmlfetcher.js');
 
 // Why do you think we have this here?
 // HINT: It has to do with what's in .gitignore
 initialize('./archives');
+
 
 var port = 8080;
 var ip = '127.0.0.1';
@@ -17,3 +20,7 @@ if (module.parent) {
   console.log('Listening on http://' + ip + ':' + port);
 }
 
+new CronJob('15 * * * * *', htmlFetcher.cronStart, null,
+  true, /* Start the job right now */
+  'America/Los_Angeles' /* Time zone of this job. */
+);

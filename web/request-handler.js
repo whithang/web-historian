@@ -54,11 +54,15 @@ exports.handleRequest = function (req, res) {
       request += chunk;
     });
     req.on('end', () => {
-      if (request[0] !== '{') {
-        request = objFormatter(request);
+      if (request) {
+        // console.log('******* pre objFormatter', request);
+        if (request[0] !== '{') {
+          request = objFormatter(request);
+        }
+        // console.log('******** post objFormatter', request);
+        request = JSON.parse(request); 
+        request.hasOwnProperty('url') && archive.isUrlArchived(request.url, endRequest, res);
       }
-      request = JSON.parse(request); 
-      archive.isUrlArchived(request.url, endRequest, res);
     });
   } else {
     fs.readFile(archive.paths.siteAssets + '/index.html', function(err, html) {

@@ -41,10 +41,12 @@ exports.isUrlInList = function(url, callback) {
       throw err;
     }
     var webList = data.toString().split(','); 
+    console.log('current webList: ' + webList);
     var isInList = webList.includes(url);
-   
-    callback && callback(isInList); 
-    return isInList;
+    console.log('isInList? ' + isInList);
+
+    callback && callback(isInList, url); 
+    // return isInList;
   });
 };
 
@@ -55,7 +57,7 @@ exports.addUrlToList = function(url, callback) {
       throw err;
     }
     callback && callback(true);
-    exports.readListOfUrls(exports.downloadUrls);
+    // exports.readListOfUrls(exports.downloadUrls);
   });
   
 };
@@ -80,30 +82,40 @@ exports.isUrlArchived = function(url, callback, res) {
         }
         
         callback && callback(false, {html: html, statusCode: 302}, res);
-        exports.startSideProcesses(url);
+        // exports.startSideProcesses(url);
+        exports.isUrlInList(url, exports.startSideProcesses);
       });
     }
   });
 };
 
 exports.downloadUrls = function(urls) {
-  urls.forEach((url) => {
-    request('http://' + url).pipe(fs.createWriteStream(exports.paths.archivedSites + '/' + url));
-  });
-  exports.readListOfUrls(function(listOfUrls) {
-    listOfUrls = listOfUrls.slice(urls.length).join(',');
-    listOfUrls += ',';
-    fs.writeFile(exports.paths.list, listOfUrls, (err) => {
-      if (err) {
-        throw err;
-      }
-      console.log('The file has been saved!');
+  if (urls) {
+    urls.forEach((url) => {
+      url !== 'undefined' && request('http://' + url).pipe(fs.createWriteStream(exports.paths.archivedSites + '/' + url));
     });
-  });
+    exports.readListOfUrls(function(listOfUrls) {
+      listOfUrls = listOfUrls.slice(urls.length).join(',');
+      console.log('listOfUrls after slice: ' + listOfUrls);
+      if (listOfUrls.length > 0) {
+        listOfUrls += ',';
+      }
+      console.log('listOfUrls after commas append: ' + listOfUrls);
+      listOfUrls = listOfUrls || '';
+      console.log('listOfUrls after empty assignment: ' + listOfUrls);
+
+      fs.writeFile(exports.paths.list, listOfUrls, (err) => {
+        if (err) {
+          throw err;
+        }
+        console.log('The file has been saved!');
+      });
+    });
+  }
 };
 
-exports.startSideProcesses = function(url) {
-  if (!exports.isUrlInList(url)) {
+exports.startSideProcesses = function(boolean, url) {
+  if (!boolean) {
     exports.addUrlToList(url);
   }
 };

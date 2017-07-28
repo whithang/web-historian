@@ -2,5 +2,8 @@
 // that are waiting.
 var archive = require('../helpers/archive-helpers');
 
-archive.readListOfUrls(archive.downloadUrls);
+module.exports.cronStart = function() {
+  archive.readListOfUrls(archive.downloadUrls);
+};
+
 
