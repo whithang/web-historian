@@ -5,25 +5,30 @@ var fs = require('fs');
 // require more modules/folders here!
 
 var endRequest = function(boolean, reqObj, res) { 
+  // if (reqObj.statusCode = 200) {
+  //   window.location.replace(archive.paths.archivedSites + url + '.html');
+  // } else if (reqObj = 302) {
+  //   window.location.replace(archive.paths.siteAssets + '/loading.html');
+  // }
   res.writeHead(reqObj.statusCode, httpHelpers.headers);
   res.write(reqObj.html);
   res.end();
 };
 
-var listCheckResponder = function(inList, url) {
-  if (!inList) {
-    archive.addUrlToList(url, archive.isUrlInList);
-  } 
-};
+// var listCheckResponder = function(inList, url) {
+//   if (!inList) {
+//     archive.addUrlToList(url, archive.isUrlInList);
+//   } 
+// };
 
-var initialRequestResponder = function(hasCopy, url) {
-  if (hasCopy) {
-    window.location.replace(archive.paths.archivedSites + url + '.html');
-  } else {
-    window.location.replace(archive.paths.siteAssets + '/loading.html');
-    archive.isUrlInList(url, listCheckResponder);
-  }
-};
+// var initialRequestResponder = function(hasCopy, url) {
+//   if (hasCopy) {
+//     window.location.replace(archive.paths.archivedSites + url + '.html');
+//   } else {
+//     window.location.replace(archive.paths.siteAssets + '/loading.html');
+//     archive.isUrlInList(url, listCheckResponder);
+//   }
+// };
 
 var objFormatter = function(string) {
   var objStr = '{"';
@@ -49,12 +54,10 @@ exports.handleRequest = function (req, res) {
       request += chunk;
     });
     req.on('end', () => {
-      console.log('Almost Complete Buffer: ' + request + ' Type of: ' + typeof request);
       if (request[0] !== '{') {
         request = objFormatter(request);
       }
       request = JSON.parse(request); 
-      
       archive.isUrlArchived(request.url, endRequest, res);
     });
   } else {

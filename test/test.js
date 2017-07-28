@@ -20,7 +20,7 @@ describe('server', function() {
     it('should return the content of index.html', function (done) {
       // just assume that if it contains an <input> tag its index.html
       request
-        .get('/')
+        .get('')
         .expect(200, /<input/, done);
     });
   });

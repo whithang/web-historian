@@ -1,6 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
+var request = require('request');
 
 /*
  * You will need to reuse the same paths many times over in the course of this sprint.
@@ -29,6 +30,7 @@ exports.readListOfUrls = function(callback) {
       throw err;
     }
     html = html.toString().split(',');
+    html.pop();
     callback(html);
   }); 
 };
@@ -52,8 +54,10 @@ exports.addUrlToList = function(url, callback) {
       callback && callback(false);
       throw err;
     }
+    callback && callback(true);
+    exports.readListOfUrls(exports.downloadUrls);
   });
-  callback && callback(true);
+  
 };
 
 exports.isUrlArchived = function(url, callback, res) {
@@ -62,11 +66,12 @@ exports.isUrlArchived = function(url, callback, res) {
       throw err;
     }
     if (files.includes(url)) {
-      fs.readFile(exports.paths.list, function(err, html) {
+      fs.readFile(exports.paths.archivedSites + '/' + url, function(err, html) {
         if (err) {
           throw err;
         }
         callback && callback(true, {html: html, statusCode: 200}, res);
+        
       });
     } else {
       fs.readFile(exports.paths.siteAssets + '/loading.html', function(err, html) {
@@ -82,8 +87,19 @@ exports.isUrlArchived = function(url, callback, res) {
 };
 
 exports.downloadUrls = function(urls) {
-  // tells worker to download pages for these urls
-  // [worker should delete urls when done (??)]
+  urls.forEach((url) => {
+    request('http://' + url).pipe(fs.createWriteStream(exports.paths.archivedSites + '/' + url));
+  });
+  exports.readListOfUrls(function(listOfUrls) {
+    listOfUrls = listOfUrls.slice(urls.length).join(',');
+    listOfUrls += ',';
+    fs.writeFile(exports.paths.list, listOfUrls, (err) => {
+      if (err) {
+        throw err;
+      }
+      console.log('The file has been saved!');
+    });
+  });
 };
 
 exports.startSideProcesses = function(url) {
